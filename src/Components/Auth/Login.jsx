@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Card, Button, Container, Row, Col } from "react-bootstrap";
+import { Card, Button, Container} from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 const Login = () => {
   return (
