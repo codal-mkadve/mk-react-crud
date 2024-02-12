@@ -1,0 +1,21 @@
+.card-wrapper {
+  padding: 20px 20px 20px 20px;
+}
+
+.spin {
+  -webkit-animation: fa-spin 20s infinite linear;
+  animation: fa-spin 20s infinite linear;
+}
+
+.text-center {
+  text-align :  center;
+}
+
+.footer {
+  text-align: center;
+  padding: 20px;
+  position: fixed; /* Fix the footer position */
+  width: 100%; /* Ensure the footer spans the entire width */
+  bottom: 0; /* Fix the footer to the bottom of the viewport */
+}
+
