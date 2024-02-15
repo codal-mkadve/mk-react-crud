@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Card, Col, Row } from "react-bootstrap";
-import Container from 'react-bootstrap/Container';
+import Container from "react-bootstrap/Container";
 
 const Dashboard = () => {
   return (

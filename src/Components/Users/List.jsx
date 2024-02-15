@@ -49,13 +49,13 @@ function List() {
               htmlFor="perPage"
               className="mb-0 d-flex align-items-center"
             >
-            Show {" "}
-            <Form.Select aria-label="Show">
-              {["10", "25", "50", "100", "ALL"].map((d) => (
-                <option key={d} value={d.toLowerCase()}>
-                  {d}
-                </option>
-              ))}
+              Show{" "}
+              <Form.Select aria-label="Show">
+                {["10", "25", "50", "100", "ALL"].map((d) => (
+                  <option key={d} value={d.toLowerCase()}>
+                    {d}
+                  </option>
+                ))}
               </Form.Select>
               entries
             </Form.Label>
@@ -89,13 +89,45 @@ function List() {
               <th>lastName</th>
               <th>email</th>
               <th>createdAt</th>
-              <th>
-              status
+              <th>status</th>
+              <th></th>
+            </tr>
+            <tr>
+            <th><Form.Control
+              id="search"
+              name="search"
+              type="search"
+              style={{ marginLeft: 10 }}
+            /> </th>
+            <th><Form.Control
+              id="search"
+              name="search"
+              type="search"
+              style={{ marginLeft: 10 }}
+            /> </th>
+            <th><Form.Control
+              id="search"
+              name="search"
+              type="search"
+              style={{ marginLeft: 10 }}
+            /> </th>
+            <th><Form.Control
+              id="search"
+              name="search"
+              type="search"
+              style={{ marginLeft: 10 }}
+            /> </th>
+            <th><Form.Control
+              id="search"
+              name="search"
+              type="search"
+              style={{ marginLeft: 10 }}
+            /> </th>
+            <th>
                 <Form.Select name="status">
                   <option value="">All</option>
                 </Form.Select>
               </th>
-              <th></th>
             </tr>
           </thead>
           <tbody>
