@@ -10,6 +10,7 @@ import Details from "../Components/Users/Details";
 import Edit from "../Components/Users/Edit";
 import UserRedirect from "../Components/Shared/UserRedirect";
 import NotFound from "../Components/Shared/NotFound";
+import Register from "../Components/Auth/Register";
 
 const Routings = () => {
   return (
@@ -24,6 +25,7 @@ const Routings = () => {
         </Route>
         <Route element={<NoAuthLayout />}>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
         </Route>
           <Route path="/" element={<UserRedirect />} />
           <Route path="*" element={<NotFound />} />

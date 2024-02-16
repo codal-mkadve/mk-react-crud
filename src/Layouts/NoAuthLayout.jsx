@@ -1,13 +1,17 @@
+import React,  { useEffect } from 'react';
 import HeaderWithoutAuth from "../Components/Shared/HeaderWithoutAuth";
 import Footer from "../Components/Shared/Footer";
 import { Outlet, useNavigate } from "react-router-dom";
 import { isLoggedIn } from "../Services/auth-service";
 
 function NoAuthLayout() {
-  const navigate = useNavigate();
-  if (isLoggedIn()) {
-    navigate("/dashboard");
-  }
+    let navigate = useNavigate();
+
+    useEffect(() => {
+      if (isLoggedIn()) {
+        navigate("/dashboard");
+      }
+    }, [navigate]);
   return (
     <>
       <HeaderWithoutAuth></HeaderWithoutAuth>

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Card, Col, Row } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
+import {getAllUsers} from "../../Services/user-service";
 
 const Dashboard = () => {
   return (
@@ -16,7 +17,7 @@ const Dashboard = () => {
               <div className="card-body px-4">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div className="me-2">
-                    <div className="display-5">1</div>
+                    <div className="display-5">{getAllUsers().length}</div>
                   </div>
                   <Link
                     className="text-dark d-flex align-items-center text-decoration-none"

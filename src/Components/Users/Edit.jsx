@@ -1,9 +1,13 @@
 import React from "react";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { Card, Button, ButtonGroup, Col, Row } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
-import { Link } from "react-router-dom";
+import { getUserById } from "../../Services/user-service";
 
 function Edit() {
+  let params = useParams();
+
+  const user = getUserById(params.id);
   return (
     <>
       <div className="d-flex justify-content-between align-items-center my-4">

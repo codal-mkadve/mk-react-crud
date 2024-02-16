@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   Card,
   Button,
@@ -8,9 +8,32 @@ import {
   Form,
   Table,
 } from "react-bootstrap";
+import {
+  bulkCreateUsers,
+  generateRandomUsers,
+  getAllUsers,
+} from "../../Services/user-service";
 import { Link } from "react-router-dom";
 
 function List() {
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const usersData = await getAllUsers();
+      setUsers(usersData);
+    };
+
+    fetchData();
+  }, []);
+
+  const handleAddRandomUser = () => {
+    const randomUsers = generateRandomUsers(100);
+    console.log("randomUsers", randomUsers);
+    bulkCreateUsers(randomUsers);
+    setUsers(randomUsers);
+  };
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center my-4">
@@ -22,7 +45,7 @@ function List() {
               Add a User
             </Button>
           </Link>
-          <Button className="d-block ms-2 me-2" outline>
+          <Button className="d-block ms-2 me-2" onClick={handleAddRandomUser}>
             <i className="fa fa-xs me-2" />
             Add Random Users
           </Button>
@@ -30,7 +53,7 @@ function List() {
             <i className="fa fa-filter fa-xs me-2" />
             Reset Filter
           </Button>
-          <Button color="danger" outline size="sm" type="button">
+          <Button color="danger" size="sm" type="button">
             <i className="fa fa-trash" />
             <span className="ms-2">Delete All Users</span>
           </Button>
@@ -81,82 +104,43 @@ function List() {
         <Table bordered hover responsive className="users-table">
           <thead>
             <tr>
-              <th style={{ minWidth: 100 }}>Actions</th>
-            </tr>
-            <tr>
               <th>id</th>
               <th>firstName</th>
               <th>lastName</th>
               <th>email</th>
               <th>createdAt</th>
               <th>status</th>
-              <th></th>
-            </tr>
-            <tr>
-            <th><Form.Control
-              id="search"
-              name="search"
-              type="search"
-              style={{ marginLeft: 10 }}
-            /> </th>
-            <th><Form.Control
-              id="search"
-              name="search"
-              type="search"
-              style={{ marginLeft: 10 }}
-            /> </th>
-            <th><Form.Control
-              id="search"
-              name="search"
-              type="search"
-              style={{ marginLeft: 10 }}
-            /> </th>
-            <th><Form.Control
-              id="search"
-              name="search"
-              type="search"
-              style={{ marginLeft: 10 }}
-            /> </th>
-            <th><Form.Control
-              id="search"
-              name="search"
-              type="search"
-              style={{ marginLeft: 10 }}
-            /> </th>
-            <th>
-                <Form.Select name="status">
-                  <option value="">All</option>
-                </Form.Select>
-              </th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <th scope="row">
-                <Link to="/users/edit/1">id</Link>
-              </th>
-              <td>firstName</td>
-              <td>lastName</td>
-              <td>email</td>
-              <td>createdAt</td>
-              <td>status</td>
-              <td>
-                <ButtonGroup>
-                  <Button color="dark" type="button" size="sm">
-                    <i className="fa fa-eye" />
-                  </Button>
-                  <Button color="dark" type="button" size="sm">
-                    <i className="fa fa-pencil" />
-                  </Button>
-                  <Button color="danger" size="sm" type="button">
-                    <i className="fa fa-trash" />
-                  </Button>
-                </ButtonGroup>
-              </td>
-            </tr>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <th scope="row">
+                  <Link to={`/users/detail/${user.id}`}>{user.id}</Link>
+                </th>
+                <td>{user.firstName}</td>
+                <td>{user.lastName}</td>
+                <td>{user.email}</td>
+                <td>{user.createdAt.toLocaleString()}</td>
+                <td>{user.status}</td>
+                <td>
+                  <ButtonGroup>
+                    <Button color="dark" type="button" size="sm">
+                      <i className="fa fa-eye" />
+                    </Button>
+                    <Button color="dark" type="button" size="sm">
+                      <i className="fa fa-pencil" />
+                    </Button>
+                    <Button color="danger" size="sm" type="button">
+                      <i className="fa fa-trash" />
+                    </Button>
+                  </ButtonGroup>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </Table>
-        <div></div>
       </Card>
     </>
   );
