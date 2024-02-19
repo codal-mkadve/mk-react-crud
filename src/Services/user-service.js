@@ -1,4 +1,15 @@
 import { faker } from "@faker-js/faker";
+import * as Yup from "yup";
+
+const errorMessages = {
+  required: "Required",
+  valueInvalid: "Value is invalid",
+  invalidEmail: "Invalid email",
+  confirmPassword: "Passwords must match",
+  passwordLength: "Password must be at least 6 characters",
+};
+
+export const isAlphabetic = (value) => /^[a-zA-Z]+$/.test(value);
 
 export const STORAGE_KEY = "USERS";
 
@@ -29,6 +40,22 @@ export const getUserById = (id) => {
   return userData?.find((user) => user.id === id) || null;
 };
 
+export const createUser = (data) => {
+
+  const updated = [
+    ...getAllUsers(),
+    {
+      ...data,
+      id: faker.string.uuid(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return true;
+};
+
 export const getAllUsers = () => {
   const userData = localStorage.getItem(STORAGE_KEY);
   return userData ? JSON.parse(userData) : [];
@@ -43,3 +70,49 @@ export const generateRandomUsers = (count) => {
     });
   return randomUsers;
 };
+
+export const getErrorMessage = (key) => errorMessages?.[key] ?? key;
+
+export const validator = (type) => {
+  switch (type) {
+    case "onlyString":
+      return Yup.string()
+        .required(getErrorMessage("required"))
+        .test("isAlphabetic", getErrorMessage("invalidValue"), (value) =>
+          value !== undefined ? isAlphabetic(value) : true
+        );
+
+    case "notRequired":
+      return Yup.string().notRequired();
+    case "notRequiredDate":
+      return Yup.date().notRequired();
+
+    case "requiredDate":
+      return Yup.date().required(getErrorMessage("required"));
+
+    case "required":
+      return Yup.string().required(getErrorMessage("required"));
+
+    case "email":
+      return Yup.string()
+        .required(getErrorMessage("required"))
+        .email(getErrorMessage("invalidEmail"));
+
+    case "password":
+      return Yup.string()
+        .required(getErrorMessage("required"))
+        .min(6, getErrorMessage("passwordLength"));
+
+    default:
+      return Yup.string().required(getErrorMessage("required"));
+  }
+};
+
+export const userFormValidation = () =>
+  Yup.object().shape({
+    firstName: validator("required"),
+    lastName: validator("required"),
+    email: validator("email"),
+    gender: validator("onlyString"),
+    status: validator("onlyString"),
+  });

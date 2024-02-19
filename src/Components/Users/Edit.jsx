@@ -3,7 +3,28 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import { Card, Button, ButtonGroup, Col, Row } from "react-bootstrap";
 import Form from "react-bootstrap/Form";
 import { getUserById } from "../../Services/user-service";
+const defaultUser = {
+  address: "",
+  age: 0,
+  email: "",
+  firstName: "",
+  gender: "M",
+  lastName: "",
+  note: "",
+  status: "active",
+};
 
+
+const genders = {
+  M: "Male",
+  F: "Female",
+  O: "Others",
+};
+
+export const statuses = {
+  active: "Active",
+  inactive: "Inactive",
+};
 function Edit() {
   let params = useParams();
 
@@ -28,54 +49,65 @@ function Edit() {
             <Col md="6">
               <Form.Group>
                 <Form.Label htmlFor="firstName">First Name </Form.Label>
-                <Form.Control id="firstName" name="firstName" />
+                <Form.Control id="firstName" name="firstName" value={user.firstName}/>
                 <Form.Control.Feedback></Form.Control.Feedback>
               </Form.Group>
             </Col>
             <Col md="6">
               <Form.Group>
                 <Form.Label htmlFor="lastName">Last Name </Form.Label>
-                <Form.Control id="lastName" name="lastName" />
+                <Form.Control id="lastName" name="lastName" value={user.lastName}/>
                 <Form.Control.Feedback></Form.Control.Feedback>
               </Form.Group>
             </Col>
           </Row>
           <Form.Group>
             <Form.Label htmlFor="email">Email Address </Form.Label>
-            <Form.Control id="email" name="email" />
+            <Form.Control id="email" name="email" value={user.email}/>
             <Form.Control.Feedback></Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Gender </Form.Label>
             <div>
               <ButtonGroup>
-                <Button color="secondary" outline type="button">
-                  Male
-                </Button>
+              {Object.keys(genders).map((key) => (
+                      <Button
+                        active={user.gender === key}
+                        color="secondary"
+                        key={key}
+                        outline
+                        type="button"
+                      >
+                        {genders[key]}
+                      </Button>
+                    ))}
               </ButtonGroup>
             </div>
           </Form.Group>
           <Form.Group>
             <Form.Label htmlFor="address">Address</Form.Label>
-            <Form.Control id="address" name="address" type="textarea" />
+            <Form.Control id="address" name="address" type="textarea" value={user.address}/>
             <Form.Control.Feedback></Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label htmlFor="note">Note</Form.Label>
-            <Form.Control id="note" name="note" type="textarea" />
+            <Form.Control id="note" name="note" type="textarea" value={user.note}/>
             <Form.Control.Feedback></Form.Control.Feedback>
           </Form.Group>
           <Form.Group className="pb-4">
             <Form.Label>Status </Form.Label>
             <div>
-              <ButtonGroup>
-                <Button active="true" color="secondary" outline type="button">
-                  Active
-                </Button>
-                <Button active="true" color="secondary" outline type="button">
-                  InActive
-                </Button>
-              </ButtonGroup>
+            {Object.keys(statuses).map((value) => (
+                      <Button
+                        active={user.status === value}
+                        color="secondary"
+                        key={value}
+                        outline
+                        type="button"
+                      >
+                        {statuses[value]}
+                      </Button>
+                    ))}
             </div>
           </Form.Group>
           <Form.Group className="d-flex justify-content-between">

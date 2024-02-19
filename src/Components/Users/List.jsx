@@ -13,8 +13,7 @@ import {
   generateRandomUsers,
   getAllUsers,
 } from "../../Services/user-service";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
 function List() {
   const [users, setUsers] = useState([]);
 
@@ -33,6 +32,9 @@ function List() {
     bulkCreateUsers(randomUsers);
     setUsers(randomUsers);
   };
+
+  let navigate = useNavigate();
+  const handleEditAction = (id) => navigate(`/users/edit/${id}`);
 
   return (
     <>
@@ -130,7 +132,7 @@ function List() {
                       <i className="fa fa-eye" />
                     </Button>
                     <Button color="dark" type="button" size="sm">
-                      <i className="fa fa-pencil" />
+                      <i className="fa fa-pencil" onClick={() => handleEditAction(user.id)}/>
                     </Button>
                     <Button color="danger" size="sm" type="button">
                       <i className="fa fa-trash" />
