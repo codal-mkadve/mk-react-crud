@@ -34,7 +34,7 @@ export const getAllUsers = () => {
   return userData ? JSON.parse(userData) : [];
 };
 
-export const generateRandomUsers = (count = 10) => {
+export const generateRandomUsers = (count) => {
   const randomUsers = [];
   Array(count)
     .fill()

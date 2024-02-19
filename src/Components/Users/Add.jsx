@@ -17,7 +17,7 @@ const UsersAdd = () => (
       </div>
     </div>
 
-    <Card>
+    <Card className="card-wrapper">
       <Form>
         <Row>
           <Col md="6">
