@@ -1,18 +1,12 @@
 import React from "react";
-import { Link, useParams, Navigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import UserBreadcrumb from "../Users/UserBreadcrumb";
 import UserForm from "../Users/UserForm";
-import { getUserById } from "../../Services/user-service";
 
 const UserAddEdit = () => {
   let params = useParams();
   const isEdit = !!params.id;
-  const user = getUserById(params.id);
-
-  if (isEdit && !user) {
-    return <Navigate to="/users" replace />;
-  }
 
   return (
     <>
