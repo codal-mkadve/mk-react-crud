@@ -1,7 +1,7 @@
-import { useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Button, ButtonGroup, Card, Col, Form, Row } from "react-bootstrap";
-import { getUserById, userFormValidation } from "../../Services/user-service";
+import { getUserById, userFormValidation, updateUser, createUser } from "../../Services/user-service";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -10,16 +10,16 @@ const defaultUser = {
   age: 28,
   email: "",
   firstName: "",
-  gender: "M",
+  gender: "male",
   lastName: "",
   note: "",
   status: "active",
 };
 
 const genders = {
-  M: "Male",
-  F: "Female",
-  O: "Others",
+  male: "Male",
+  female: "Female",
+  others: "Others",
 };
 
 export const statuses = {
@@ -27,37 +27,46 @@ export const statuses = {
   inactive: "Inactive",
 };
 
-const UsersAdd = ({ id = "" }) => {
+const UserForm = ({ id }) => {
   const [isLoading, setLoading] = useState(false);
   const navigate = useNavigate();
   const isEdit = !!id;
-
-  const handleFormSubmit = (values) => {
-    // setValue("firstName", generateRandomUser().firstName);
-    // setValue("lastName", generateRandomUser().lastName);
-    // setValue("email", generateRandomUser().email);
-    // setValue("address", generateRandomUser().address);
-    // setValue("note", generateRandomUser().note);
-    // setValue("gender", generateRandomUser().gender);
-    // setValue("status", generateRandomUser().status);
-    console.log("values", values);
-  };
-
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-    setValue,
-    getValues,
-  } = useForm({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     defaultValues: defaultUser,
     resolver: yupResolver(userFormValidation()),
   });
 
-  console.log("aaa", watch(),errors);
+  const formValues = watch();
+  console.log('formValues',formValues)
 
-  const handleRandomData = () => {};
+  useEffect(() => {
+    if (isEdit) {
+      const user = getUserById(id);
+      console.log('user',user)
+      Object.keys(user).forEach(key => {
+        setValue(key, user[key]);
+      });
+    }
+  }, [isEdit, id, setValue]);
+
+  const handleFormSubmit = (values) => {
+    setLoading(true);
+    if (isEdit) {
+      updateUser(id, values);
+    } else {
+      createUser(values);
+    }
+      navigate("/users");
+  };
+
+  const handleRandomData = () => {
+    
+  };
+
+  const handleButtonClick = (button,key) =>{
+    setValue(button, key);
+    console.log(button,key,formValues)
+  }
 
   const renderSubmit = () => {
     if (isLoading) {
@@ -69,24 +78,11 @@ const UsersAdd = ({ id = "" }) => {
         />
       );
     }
-
     return isEdit ? "Update" : "Add";
   };
 
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center my-4">
-        <h1 className="mb-0">Users</h1>
-        <div className="d-flex">
-          <Link className="text-decoration-none" to="/users">
-            <Button>
-              <i className="fa fa-arrow-left fa-xs me-2" />
-              Back to List
-            </Button>
-          </Link>
-        </div>
-      </div>
-
       <Card className="card-wrapper">
         <Form onSubmit={handleSubmit(handleFormSubmit)}>
           <Row>
@@ -127,18 +123,21 @@ const UsersAdd = ({ id = "" }) => {
               isInvalid={!!errors?.email}
               {...register("email")}
             />
-            <Form.Control.Feedback type="invalid">{errors?.email?.message}</Form.Control.Feedback>
+            <Form.Control.Feedback type="invalid">
+              {errors?.email?.message}
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group>
             <Form.Label>Gender </Form.Label>
             <div>
               <ButtonGroup>
                 {Object.keys(genders).map((value) => (
+                    
                   <Button
-                    active={getValues("gender") === value}
+                    active={formValues.gender === value}
                     color="secondary"
                     key={value}
-                    onClick={() => setValue("gender", value)}
+                    onClick={() => handleButtonClick("gender", value)}
                     type="button"
                   >
                     {genders[value]}
@@ -177,9 +176,9 @@ const UsersAdd = ({ id = "" }) => {
                   <Button
                     key={key}
                     color="secondary"
-                    onClick={() => setValue("status", key)}
+                    onClick={() => handleButtonClick("status",key)}
                     type="button"
-                    active={getValues("status") === key}
+                    active={formValues.status === key}
                   >
                     {statuses[key]}
                   </Button>
@@ -212,4 +211,4 @@ const UsersAdd = ({ id = "" }) => {
   );
 };
 
-export default UsersAdd;
+export default UserForm;

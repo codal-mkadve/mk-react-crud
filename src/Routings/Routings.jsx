@@ -5,9 +5,8 @@ import Dashboard from "../Components/Dashboard/Dashboard";
 import AuthLayout from "../Layouts/AuthLayout";
 import NoAuthLayout from "../Layouts/NoAuthLayout";
 import List from "../Components/Users/List";
-import UsersAdd from "../Components/Users/Add";
+import UserAddEdit from "../Components/Users/UserAddEdit";
 import Details from "../Components/Users/Details";
-import Edit from "../Components/Users/Edit";
 import UserRedirect from "../Components/Shared/UserRedirect";
 import NotFound from "../Components/Shared/NotFound";
 import Register from "../Components/Auth/Register";
@@ -19,9 +18,9 @@ const Routings = () => {
         <Route element={<AuthLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/users" element={<List />} />
-          <Route path="/users/add" element={<UsersAdd />} />
+          <Route path="/users/add" element={<UserAddEdit />} />
+          <Route path="/users/edit/:id" element={<UserAddEdit />} />
           <Route path="/users/detail/:id" element={<Details />} />
-          <Route path="/users/edit/:id" element={<Edit />} />
         </Route>
         <Route element={<NoAuthLayout />}>
           <Route path="/login" element={<Login />} />

@@ -25,11 +25,12 @@ export const generateRandomUser = () => {
     id: faker.string.uuid(),
     email: faker.internet.email().toLowerCase(),
     address: faker.location.streetAddress(true),
-    age: 28,
+    age: faker.datatype.number({ min: 18, max: 80 }),
     firstName: faker.person.firstName(sex),
     gender: sex,
     lastName: faker.person.lastName(sex),
     note: faker.lorem.words(25),
+    status: Math.floor(Math.random() * 2) ? "active" : "inactive",
     createdAt: faker.date.past(),
     updatedAt: Date.now(),
   };
@@ -41,19 +42,36 @@ export const getUserById = (id) => {
 };
 
 export const createUser = (data) => {
+  const newUser = {
+    ...data,
+    id: faker.string.uuid(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 
-  const updated = [
-    ...getAllUsers(),
-    {
-      ...data,
-      id: faker.string.uuid(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    },
-  ];
+  const users = getAllUsers();
+  users.push(newUser);
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
   return true;
+};
+
+export const updateUser = (id, data) => {
+  const users = getAllUsers();
+  const index = users.findIndex((user) => user.id === id);
+
+  if (index !== -1) {
+    users[index] = {
+      ...data,
+      updatedAt: new Date().toISOString(),
+      id,
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(users));
+    return true;
+  }
+
+  return false;
 };
 
 export const getAllUsers = () => {
@@ -116,3 +134,15 @@ export const userFormValidation = () =>
     gender: validator("onlyString"),
     status: validator("onlyString"),
   });
+
+export const deleteUserById = (id) => {
+  const allUsers = getAllUsers().filter((user) => user.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+  return true;
+};
+
+export const deleteAllUsers = () => {
+  const allUsers = [];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
+  return true;
+};

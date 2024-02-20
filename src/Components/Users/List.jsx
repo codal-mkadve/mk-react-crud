@@ -12,19 +12,23 @@ import {
   bulkCreateUsers,
   generateRandomUsers,
   getAllUsers,
+  deleteAllUsers,
+  deleteUserById
 } from "../../Services/user-service";
 import { Link, useNavigate } from "react-router-dom";
+
+
 function List() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const usersData = await getAllUsers();
-      setUsers(usersData);
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    const usersData = await getAllUsers();
+    setUsers(usersData);
+  };
 
   const handleAddRandomUser = () => {
     const randomUsers = generateRandomUsers(100);
@@ -33,8 +37,19 @@ function List() {
     setUsers(randomUsers);
   };
 
+  const handleDeleteUser = async (id) => {
+    await deleteUserById(id);
+    fetchData();
+  };
+
+  const handleDeleteAllUsers = async () => {
+    await deleteAllUsers();
+    fetchData();
+  };
+
   let navigate = useNavigate();
-  const handleEditAction = (id) => navigate(`/users/edit/${id}`);
+
+  const handleActionButton = (action, id) => navigate(`/users/${action}/${id}`);
 
   return (
     <>
@@ -55,7 +70,7 @@ function List() {
             <i className="fa fa-filter fa-xs me-2" />
             Reset Filter
           </Button>
-          <Button color="danger" size="sm" type="button">
+          <Button color="danger" size="sm" type="button" onClick={handleDeleteAllUsers}>
             <i className="fa fa-trash" />
             <span className="ms-2">Delete All Users</span>
           </Button>
@@ -106,12 +121,12 @@ function List() {
         <Table bordered hover responsive className="users-table">
           <thead>
             <tr>
-              <th>id</th>
-              <th>firstName</th>
-              <th>lastName</th>
-              <th>email</th>
-              <th>createdAt</th>
-              <th>status</th>
+              <th>ID</th>
+              <th>First Name</th>
+              <th>Last Name</th>
+              <th>Email</th>
+              <th>Created On</th>
+              <th>Status</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -128,14 +143,15 @@ function List() {
                 <td>{user.status}</td>
                 <td>
                   <ButtonGroup>
-                    <Button color="dark" type="button" size="sm">
+                    <Button color="dark" type="button" size="sm"
+                     onClick={() => handleActionButton("detail", user.id)}>
                       <i className="fa fa-eye" />
                     </Button>
                     <Button color="dark" type="button" size="sm">
-                      <i className="fa fa-pencil" onClick={() => handleEditAction(user.id)}/>
+                      <i className="fa fa-pencil" onClick={() => handleActionButton("edit",user.id)}/>
                     </Button>
                     <Button color="danger" size="sm" type="button">
-                      <i className="fa fa-trash" />
+                      <i className="fa fa-trash" onClick={() => handleDeleteUser(user.id)}/>
                     </Button>
                   </ButtonGroup>
                 </td>

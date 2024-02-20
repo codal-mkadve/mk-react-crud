@@ -62,12 +62,12 @@ function Details() {
                     className="text-decoration-none me-2"
                     to={`/users/edit/${id}`}
                   >
-                    <Button outline>
+                    <Button>
                       <i className="fa fa-pencil fa-xs me-2" />
                       Edit
                     </Button>
                   </Link>
-                  <Button color="danger" outline size="sm" type="button">
+                  <Button color="danger" size="sm" type="button">
                     <i className="fa fa-trash" />
                     <span className="ms-2">Delete</span>
                   </Button>
