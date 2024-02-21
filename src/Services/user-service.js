@@ -146,3 +146,8 @@ export const deleteAllUsers = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(allUsers));
   return true;
 };
+
+export const paginateTable = (array, perPage, pageIndex) => {
+  const startIndex = (pageIndex - 1) * perPage;
+  return array.slice(startIndex, pageIndex * perPage);
+}

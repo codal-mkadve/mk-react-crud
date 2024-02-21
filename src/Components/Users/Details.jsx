@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Table } from "react-bootstrap";
-import { Link, useParams } from "react-router-dom";
-import { getUserById } from "../../Services/user-service";
+import { Link, useParams, useNavigate } from "react-router-dom";
+import { getUserById, deleteUserById } from "../../Services/user-service";
 
 function Details() {
   const [user, setUser] = useState(null);
   const { id } = useParams();
+  let navigate = useNavigate();
 
   useEffect(() => {
     const fetchUser = async () => {
       const userData = await getUserById(id);
       setUser(userData);
     };
-
     fetchUser();
   }, [id]);
+
+  const handleDeleteClick = (id) => {
+    deleteUserById(id);
+    navigate("/users");
+  };
 
   if (!user) return <p>Loading...</p>;
 
@@ -67,7 +72,12 @@ function Details() {
                       Edit
                     </Button>
                   </Link>
-                  <Button color="danger" size="sm" type="button">
+                  <Button
+                    color="danger"
+                    size="sm"
+                    type="button"
+                    onClick={() => handleDeleteClick(id)}
+                  >
                     <i className="fa fa-trash" />
                     <span className="ms-2">Delete</span>
                   </Button>
