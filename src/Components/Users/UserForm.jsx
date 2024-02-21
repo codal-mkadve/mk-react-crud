@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, ButtonGroup, Card, Col, Form, Row } from "react-bootstrap";
 import { getUserById, userFormValidation, updateUser, createUser } from "../../Services/user-service";
 import { useForm } from "react-hook-form";
