@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, ButtonGroup, Card, Col, Form, Row } from "react-bootstrap";
-import { getUserById, userFormValidation, updateUser, createUser } from "../../Services/user-service";
+import { getUserById, userFormValidation, updateUser, createUser, generateRandomUser } from "../../Services/user-service";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -37,17 +37,19 @@ const UserForm = ({ id }) => {
   });
 
   const formValues = watch();
-  console.log('formValues',formValues)
 
   useEffect(() => {
     if (isEdit) {
       const user = getUserById(id);
-      console.log('user',user)
-      Object.keys(user).forEach(key => {
-        setValue(key, user[key]);
-      });
+      setUserValues(user);
     }
   }, [isEdit, id, setValue]);
+
+  const setUserValues = (user) =>{
+    Object.keys(user).forEach(key => {
+      setValue(key, user[key]);
+    });
+  } 
 
   const handleFormSubmit = (values) => {
     setLoading(true);
@@ -60,12 +62,11 @@ const UserForm = ({ id }) => {
   };
 
   const handleRandomData = () => {
-    
+    setUserValues(generateRandomUser());
   };
 
   const handleButtonClick = (button,key) =>{
     setValue(button, key);
-    console.log(button,key,formValues)
   }
 
   const renderSubmit = () => {

@@ -74,6 +74,52 @@ export const updateUser = (id, data) => {
   return false;
 };
 
+export const getFilteredListData = (filterObj) => {
+  const globalSearch = filterObj.globalSearch;
+  const {
+    id = "",
+    email = "",
+    firstName = "",
+    lastName = "",
+    createdAt = "",
+    status = "",
+  } = filterObj.columnFilter || {};
+  console.log("getAllUsers()", getAllUsers(), filterObj.columnFilter);
+  return getAllUsers()
+    .filter((user) => {
+      const emailMatch = !email || search(user.email, email);
+      const firstNameMatch = !firstName || search(user.firstName, firstName);
+      const idMatch = !id || search(user.id, id);
+      const lastNameMatch = !lastName || search(user.lastName, lastName);
+      const createdAtMatch = !createdAt || search(user.createdAt, createdAt);
+      const statusMatch = !status || user.status === status;
+      return (
+        emailMatch &&
+        firstNameMatch &&
+        idMatch &&
+        lastNameMatch &&
+        createdAtMatch &&
+        statusMatch
+      );
+    })
+    .sort((a, b) => {
+      const valueA = a[filterObj.sortColumn];
+      const valueB = b[filterObj.sortColumn];
+  
+      // If the sort column is invalid or missing, return 0 (no change in position)
+      if (!valueA || !valueB) return 0;
+  
+      // Compare the values based on the sorting order
+      return filterObj.sortBy === "DESC"
+          ? valueA.localeCompare(valueB)
+          : valueB.localeCompare(valueA);
+  })
+};
+
+export const search = (columnName, searchValue) => {
+  return columnName?.toLowerCase().includes(searchValue?.toLowerCase());
+};
+
 export const getAllUsers = () => {
   const userData = localStorage.getItem(STORAGE_KEY);
   return userData ? JSON.parse(userData) : [];
@@ -150,4 +196,4 @@ export const deleteAllUsers = () => {
 export const paginateTable = (array, perPage, pageIndex) => {
   const startIndex = (pageIndex - 1) * perPage;
   return array.slice(startIndex, pageIndex * perPage);
-}
+};

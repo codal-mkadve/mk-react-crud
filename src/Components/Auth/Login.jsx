@@ -25,9 +25,6 @@ const Login = () => {
       navigate("/dashboard");
     }
   };
-
-  console.log(watch("email"));
-
   return (
     <Container fluid="sm" className="mt-4">
       <h1 className="text-center">Login</h1>

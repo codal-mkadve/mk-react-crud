@@ -6,7 +6,7 @@ import {
   Col,
   Row,
   Form,
-  Table,
+  Table
 } from "react-bootstrap";
 import {
   bulkCreateUsers,
@@ -14,21 +14,33 @@ import {
   getAllUsers,
   deleteAllUsers,
   deleteUserById,
-  paginateTable
+  paginateTable,
+  getFilteredListData
 } from "../../Services/user-service";
 import { Link, useNavigate } from "react-router-dom";
 import PaginationContainer from "../Shared/PaginationContainer";
+import { statuses } from "./UserForm";
 
 function List() {
+  const [columnSearch, setColumnSearch] = useState({});
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [showAll, setShowAll] = useState(false);
-  const showEntries = {10: "10", 25:  "25", 50: "50", 100: "100", all: users.length}
+  const [sortColumn, setsortColumn] = useState('');
+  const [sortBy, setsortBy] = useState('');
+
+  const showEntries = {
+    10: "10",
+    25: "25",
+    50: "50",
+    100: "100",
+    all: users.length,
+  };
 
   const getUserListData = () => {
     return paginateTable(users, showAll ? users.length : perPage, currentPage);
-  }
+  };
 
   const userListData = getUserListData();
 
@@ -60,8 +72,7 @@ function List() {
   const getPaginationDetails = () => {
     if (!showAll) {
       const total = users.length;
-      const from =
-        total > 0 ? (currentPage - 1) * perPage + 1 : 0;
+      const from = total > 0 ? (currentPage - 1) * perPage + 1 : 0;
       const to = currentPage * perPage;
       return `Showing ${from} to ${
         to > total ? total : to
@@ -70,16 +81,105 @@ function List() {
     return `Showing all (${users.length}) entries`;
   };
 
-
   let navigate = useNavigate();
 
   const handleActionButton = (action, id) => navigate(`/users/${action}/${id}`);
 
   const handleEntriesChange = (ev) => {
-    setShowAll(ev.target.value === 'all');
-    setPerPage(ev.target.value || 'all');
+    setShowAll(ev.target.value === "all");
+    setPerPage(ev.target.value || "all");
     setCurrentPage(1);
-  }
+  };
+
+  const headerTitles = {
+    id: "ID",
+    firstName: "First Name",
+    lastName: "Last Name",
+    email: "Email",
+    createdAt: "Created At",
+    status: "Status",
+  };
+  
+
+  const showFilterControls = (headerTitles) => (
+    Object.keys(headerTitles).map((key) => (
+      <th key={key}>
+        {key === "status" ? (
+          <Form.Control
+            name={key}
+            as="select"
+            onChange={(ev)=>{updateColumnSearch(key, ev)}}
+          >
+            <option value="">All</option>
+            {Object.keys(statuses).map((statusKey) => (
+              <option key={statusKey} value={statusKey}>
+                {statuses[statusKey]}
+              </option>
+            ))}
+          </Form.Control>
+        ) : (
+          showSearchInput(key)
+        )}
+      </th>
+    ))
+  );
+
+  
+  const updateColumnSearch = (key, ev) => {
+    const columnFilter = {
+      ...columnSearch,
+      [key]: ev.target.value || "",
+    }
+    setColumnSearch(columnFilter);
+    setCurrentPage(1);
+    console.log('columnFilter',columnFilter, {columnFilter});
+    const filterData = getFilteredListData({columnFilter});
+    setUsers(filterData);
+  };
+
+  const handleSort = (key) => {
+    if (sortColumn === key) {
+      setsortBy(sortBy === "ASC" ? "DESC" : "ASC");
+    } else {
+      setsortColumn(key);
+      setsortBy("ASC");
+    }
+
+    const filterData = getFilteredListData({sortBy,sortColumn});
+    console.log('sortColumn,sortBy, filterData',sortColumn,sortBy, filterData )
+    setUsers(filterData);
+  };
+
+  const showSort = (key) => {
+    console.log('key, sortColumn',key, sortColumn);
+    if (key === sortColumn) {
+      return sortBy === "ASC" ? <span>&uarr;</span> : <span>&darr;</span>;
+    } else {
+      return null;
+    }
+  };
+
+  const showSearchInput = (key) => (
+    <Form.Control
+      name={key}
+      type="search"
+      onChange={(ev) => updateColumnSearch(key, ev)}
+      value={columnSearch?.[key] || ""}
+    />
+  );
+
+  const showHeaders = () => (
+    Object.keys(headerTitles).map((key) => (
+      <th key={key} onClick={() => handleSort(key)}>
+        <div
+          className="d-flex text-items-center justify-content-between align-items-center"
+          role="button"
+        >
+          {headerTitles[key]} {showSort(key)}
+        </div>
+      </th>
+    ))
+  );
 
   return (
     <>
@@ -125,9 +225,11 @@ function List() {
               className="mb-0 d-flex align-items-center"
             >
               Show{" "}
-              <Form.Select aria-label="Show" 
-              value={perPage || "10"}
-              onChange={(e) => handleEntriesChange(e)}>
+              <Form.Select
+                aria-label="Show"
+                value={perPage || "10"}
+                onChange={(e) => handleEntriesChange(e)}
+              >
                 {Object.keys(showEntries).map((val) => (
                   <option key={val} value={val.toLowerCase()}>
                     {val}
@@ -158,13 +260,11 @@ function List() {
         <Table bordered hover responsive className="users-table">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Email</th>
-              <th>Created On</th>
-              <th>Status</th>
-              <th>Actions</th>
+            {showHeaders()}
+            </tr>
+            <tr>
+              {showFilterControls(headerTitles)}
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -207,12 +307,10 @@ function List() {
           </tbody>
         </Table>
         <div className="d-flex justify-content-between align-items-center">
-          <span>
-            {getPaginationDetails()}
-          </span>
+          <span>{getPaginationDetails()}</span>
           <PaginationContainer
             activePage={currentPage}
-            itemsCountPerPage={Number(showAll ? users.length :  perPage)}
+            itemsCountPerPage={Number(showAll ? users.length : perPage)}
             onChange={(val) => setCurrentPage(val)}
             totalItemsCount={users.length}
           />
