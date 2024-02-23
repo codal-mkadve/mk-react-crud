@@ -84,7 +84,6 @@ export const getFilteredListData = (filterObj) => {
     createdAt = "",
     status = "",
   } = filterObj.columnFilter || {};
-  console.log("getAllUsers()", getAllUsers(), filterObj.columnFilter);
   return getAllUsers()
     .filter((user) => {
       const emailMatch = !email || search(user.email, email);
@@ -105,15 +104,26 @@ export const getFilteredListData = (filterObj) => {
     .sort((a, b) => {
       const valueA = a[filterObj.sortColumn];
       const valueB = b[filterObj.sortColumn];
-  
+
       // If the sort column is invalid or missing, return 0 (no change in position)
       if (!valueA || !valueB) return 0;
-  
+
       // Compare the values based on the sorting order
-      return filterObj.sortBy === "DESC"
-          ? valueA.localeCompare(valueB)
-          : valueB.localeCompare(valueA);
-  })
+      return filterObj.sortBy === "ASC"
+        ? valueA.localeCompare(valueB)
+        : valueB.localeCompare(valueA);
+    })
+    .filter((user) => {
+      return globalSearch
+        ? search(user.firstName, globalSearch) ||
+          search(user.lastName, globalSearch) ||
+          search(user.email, globalSearch) ||
+          search(user.address, globalSearch) ||
+          search(user.id, globalSearch) ||
+          search(user.createdAt, globalSearch) ||
+          search(user.note, globalSearch)
+        : getAllUsers();
+    });
 };
 
 export const search = (columnName, searchValue) => {

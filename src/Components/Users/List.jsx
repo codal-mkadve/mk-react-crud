@@ -28,7 +28,8 @@ function List() {
   const [perPage, setPerPage] = useState(10);
   const [showAll, setShowAll] = useState(false);
   const [sortColumn, setsortColumn] = useState('');
-  const [sortBy, setsortBy] = useState('');
+  const [sortBy, setsortBy] = useState('ASC');
+  const [globalSearch, setGlobalSearch] = useState('');
 
   const showEntries = {
     10: "10",
@@ -132,28 +133,52 @@ function List() {
     }
     setColumnSearch(columnFilter);
     setCurrentPage(1);
-    console.log('columnFilter',columnFilter, {columnFilter});
     const filterData = getFilteredListData({columnFilter});
     setUsers(filterData);
   };
 
-  const handleSort = (key) => {
-    if (sortColumn === key) {
-      setsortBy(sortBy === "ASC" ? "DESC" : "ASC");
-    } else {
-      setsortColumn(key);
-      setsortBy("ASC");
-    }
+  const handleResetFilter = () => {
+    setCurrentPage(1);
+    setPerPage(10);
+    setColumnSearch({});
+    setGlobalSearch('');
+  };
 
-    const filterData = getFilteredListData({sortBy,sortColumn});
-    console.log('sortColumn,sortBy, filterData',sortColumn,sortBy, filterData )
+  const handleSort = (key) => {
+    const updateSortBy = sortColumn === key ? sortBy === "ASC" ? "DESC" : "ASC" : "ASC";
+    
+    setsortBy(updateSortBy);
+    setsortColumn(key);
+    const filterData = getFilteredListData({sortBy : updateSortBy,sortColumn:key});
     setUsers(filterData);
   };
 
+  const handleGlobalSearch = (value) =>{
+    const updatedSearch = value;
+    setGlobalSearch(updatedSearch);
+    setCurrentPage(1);
+    const filterData = getFilteredListData({globalSearch: updatedSearch});
+    setUsers(filterData);
+}
+
+const getFilterDetails = () => {
+  const usersData = getAllUsers();
+  const {
+    email = "",
+    firstName = "",
+    id = "",
+    lastName = "",
+    status = "",
+  } = columnSearch || {};
+
+  return firstName || lastName || email || id || status || globalSearch
+    ? `(filtered from ${usersData.length} total entries)`
+    : "";
+};
+
   const showSort = (key) => {
-    console.log('key, sortColumn',key, sortColumn);
     if (key === sortColumn) {
-      return sortBy === "ASC" ? <span>&uarr;</span> : <span>&darr;</span>;
+      return sortBy === "ASC" ? <span>&darr;</span> : <span>&uarr;</span>;
     } else {
       return null;
     }
@@ -179,7 +204,7 @@ function List() {
         </div>
       </th>
     ))
-  );
+  ); 
 
   return (
     <>
@@ -196,7 +221,7 @@ function List() {
             <i className="fa fa-xs me-2" />
             Add Random Users
           </Button>
-          <Button className="d-block me-2">
+          <Button className="d-block me-2"  onClick={handleResetFilter}>
             <i className="fa fa-filter fa-xs me-2" />
             Reset Filter
           </Button>
@@ -254,6 +279,10 @@ function List() {
               name="search"
               type="search"
               style={{ marginLeft: 10 }}
+              onChange={(ev) => {
+                handleGlobalSearch(ev.target.value)
+              }}
+              value={globalSearch}
             />
           </Col>
         </Row>
@@ -307,7 +336,7 @@ function List() {
           </tbody>
         </Table>
         <div className="d-flex justify-content-between align-items-center">
-          <span>{getPaginationDetails()}</span>
+          <span>{getPaginationDetails()} {getFilterDetails()}</span>
           <PaginationContainer
             activePage={currentPage}
             itemsCountPerPage={Number(showAll ? users.length : perPage)}
