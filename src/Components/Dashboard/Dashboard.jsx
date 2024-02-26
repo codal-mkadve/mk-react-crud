@@ -6,7 +6,7 @@ import {getAllUsers} from "../../Services/user-service";
 
 const Dashboard = () => {
   return (
-    <Container>
+    <Container className="container-wrapper">
       <div className="d-flex justify-content-between align-items-center my-4">
         <h1>Dashboard</h1>
       </div>

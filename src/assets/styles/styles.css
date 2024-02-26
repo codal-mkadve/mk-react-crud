@@ -22,3 +22,6 @@
   bottom: 0; /* Fix the footer to the bottom of the viewport */
 }
 
+.container-wrapper {
+  height: 640px;
+}
