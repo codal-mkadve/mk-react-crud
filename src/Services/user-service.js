@@ -74,57 +74,68 @@ export const updateUser = (id, data) => {
   return false;
 };
 
-export const getFilteredListData = (filterObj) => {
-  const globalSearch = filterObj.globalSearch;
+export const globalSearch = (globalSearch) =>{
+  
+}
+
+export const getFilteredListData = ({
+  columnSearch,
+  data,
+  globalSearch,
+  sortColumn,
+  sortBy,
+}) => {
+  const searchTerm = globalSearch.toLowerCase();
   const {
-    id = "",
+    createdAt = "",
     email = "",
     firstName = "",
+    id = "",
     lastName = "",
-    createdAt = "",
     status = "",
-  } = filterObj.columnFilter || {};
-  return getAllUsers()
-    .filter((user) => {
-      const emailMatch = !email || search(user.email, email);
-      const firstNameMatch = !firstName || search(user.firstName, firstName);
-      const idMatch = !id || search(user.id, id);
-      const lastNameMatch = !lastName || search(user.lastName, lastName);
-      const createdAtMatch = !createdAt || search(user.createdAt, createdAt);
-      const statusMatch = !status || user.status === status;
-      return (
-        emailMatch &&
-        firstNameMatch &&
-        idMatch &&
-        lastNameMatch &&
-        createdAtMatch &&
-        statusMatch
-      );
-    })
-    .sort((a, b) => {
-      const valueA = a[filterObj.sortColumn];
-      const valueB = b[filterObj.sortColumn];
+  } = columnSearch || {};
 
-      // If the sort column is invalid or missing, return 0 (no change in position)
-      if (!valueA || !valueB) return 0;
+  console.log('sortColumn',sortColumn,sortBy);
+  return data
+  .sort((a, b) => {
+    let aValue = a[sortColumn];
+    let bValue = b[sortColumn];
 
-      // Compare the values based on the sorting order
-      return filterObj.sortBy === "ASC"
-        ? valueA.localeCompare(valueB)
-        : valueB.localeCompare(valueA);
-    })
-    .filter((user) => {
-      return globalSearch
-        ? search(user.firstName, globalSearch) ||
-          search(user.lastName, globalSearch) ||
-          search(user.email, globalSearch) ||
-          search(user.address, globalSearch) ||
-          search(user.id, globalSearch) ||
-          search(user.createdAt, globalSearch) ||
-          search(user.note, globalSearch)
-        : getAllUsers();
-    });
+    // Handle null or undefined values
+    aValue = aValue || '';
+    bValue = bValue || '';
+
+    if (typeof aValue === 'string') aValue = aValue.toLowerCase();
+    if (typeof bValue === 'string') bValue = bValue.toLowerCase();
+
+    // Adjust sort order based on sortBy
+    if (sortBy === "ASC") {
+      return aValue.localeCompare(bValue);
+    } else {
+      return bValue.localeCompare(aValue);
+    }
+  })
+    .filter((user) =>
+      searchTerm
+        ? search(user.address, searchTerm) ||
+          search(user.age.toString(), searchTerm) ||
+          search(user.email, searchTerm) ||
+          search(user.firstName, searchTerm) ||
+          search(user.id, searchTerm) ||
+          search(user.lastName, searchTerm) ||
+          search(user.createdAt.toString(), searchTerm) ||
+          search(user.note, searchTerm)
+        : true
+    )
+    .filter((user) => (email ? search(user.email, email) : true))
+    .filter((user) => (firstName ? search(user.firstName, firstName) : true))
+    .filter((user) => (id ? search(user.id, id) : true))
+    .filter((user) => (lastName ? search(user.lastName, lastName) : true))
+    .filter((user) => (createdAt ? search(user.createdAt.toString(), createdAt) : true))
+    .filter((user) => (status ? user.status === status : true));
 };
+
+
 
 export const search = (columnName, searchValue) => {
   return columnName?.toLowerCase().includes(searchValue?.toLowerCase());

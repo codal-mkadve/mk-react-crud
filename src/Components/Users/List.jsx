@@ -6,7 +6,7 @@ import {
   Col,
   Row,
   Form,
-  Table
+  Table,
 } from "react-bootstrap";
 import {
   bulkCreateUsers,
@@ -15,21 +15,71 @@ import {
   deleteAllUsers,
   deleteUserById,
   paginateTable,
-  getFilteredListData
+  getFilteredListData,
 } from "../../Services/user-service";
 import { Link, useNavigate } from "react-router-dom";
 import PaginationContainer from "../Shared/PaginationContainer";
 import { statuses } from "./UserForm";
+import UserBreadcrumb from "../Users/UserBreadcrumb";
 
-function List() {
+const debounce = (func, delay) => {
+  let debounceTimer;
+  return function () {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
+};
+
+const List = () => {
   const [columnSearch, setColumnSearch] = useState({});
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
   const [showAll, setShowAll] = useState(false);
-  const [sortColumn, setsortColumn] = useState('');
-  const [sortBy, setsortBy] = useState('ASC');
-  const [globalSearch, setGlobalSearch] = useState('');
+  const [sortColumn, setsortColumn] = useState("");
+  const [sortBy, setsortBy] = useState("ASC");
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [listData, setListData] = useState([]);
+  const [count, setCount] = useState(0);
+  const [totalFilteredEntries, setTotalFilteredEntries] = useState(0);
+
+  const all = getAllUsers();
+
+  useEffect(() => {
+    const filterAndUpdateList = () => {
+      const filteredData = getFilteredListData({
+        columnSearch,
+        data: all,
+        globalSearch,
+        sortColumn,
+        sortBy,
+      });
+      console.log("filteredData", filteredData,sortColumn);
+      setTotalFilteredEntries(filteredData.length);
+
+      const paginatedData = paginateTable(
+        filteredData,
+        perPage === "all" ? filteredData.length : perPage,
+        currentPage
+      );
+
+      setListData(paginatedData);
+    };
+
+    // Debounce the filtering function to delay execution
+    const debouncedFiltering = debounce(filterAndUpdateList, 300);
+    debouncedFiltering();
+  }, [
+    columnSearch,
+    currentPage,
+    globalSearch,
+    perPage,
+    sortColumn,
+    sortBy,
+    count,
+  ]);
 
   const showEntries = {
     10: "10",
@@ -39,47 +89,52 @@ function List() {
     all: users.length,
   };
 
-  const getUserListData = () => {
-    return paginateTable(users, showAll ? users.length : perPage, currentPage);
-  };
+  // const getUserListData = () => {
+  //   return paginateTable(filterData, showAll ? filterData.length : perPage, currentPage);
+  // };
 
-  const userListData = getUserListData();
+  // const userListData = getUserListData();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
   const fetchData = async () => {
     const usersData = await getAllUsers();
     setUsers(usersData);
   };
 
-  const handleAddRandomUser = () => {
-    const randomUsers = generateRandomUsers(100);
-    bulkCreateUsers(randomUsers);
-    setUsers(randomUsers);
-  };
 
   const handleDeleteUser = async (id) => {
     await deleteUserById(id);
     fetchData();
+    setCount((prevCount) => prevCount + 1);
+  };
+
+  const handleAddRandomUser = async () => {
+    const randomUsers = generateRandomUsers(100);
+    await bulkCreateUsers(randomUsers);
+    fetchData(); // Re-fetch the updated list of users
+    setCount((prevCount) => prevCount + 1); // Trigger list update
   };
 
   const handleDeleteAllUsers = async () => {
     await deleteAllUsers();
-    fetchData();
+    fetchData(); // Re-fetch the updated list of users, which should now be empty
+    setCount((prevCount) => prevCount + 1); // Trigger list update
   };
 
   const getPaginationDetails = () => {
     if (!showAll) {
-      const total = users.length;
+      const total = totalFilteredEntries; // Use total filtered entries
       const from = total > 0 ? (currentPage - 1) * perPage + 1 : 0;
       const to = currentPage * perPage;
       return `Showing ${from} to ${
         to > total ? total : to
       } of ${total} entries`;
     }
-    return `Showing all (${users.length}) entries`;
+    // Use totalFilteredEntries to show the total number of entries when displaying all
+    return `Showing all (${totalFilteredEntries}) entries`;
   };
 
   let navigate = useNavigate();
@@ -100,16 +155,17 @@ function List() {
     createdAt: "Created At",
     status: "Status",
   };
-  
 
-  const showFilterControls = (headerTitles) => (
+  const showFilterControls = (headerTitles) =>
     Object.keys(headerTitles).map((key) => (
       <th key={key}>
         {key === "status" ? (
           <Form.Control
             name={key}
             as="select"
-            onChange={(ev)=>{updateColumnSearch(key, ev)}}
+            onChange={(ev) => {
+              updateColumnSearch(key, ev);
+            }}
           >
             <option value="">All</option>
             {Object.keys(statuses).map((statusKey) => (
@@ -122,59 +178,55 @@ function List() {
           showSearchInput(key)
         )}
       </th>
-    ))
-  );
+    ));
 
-  
   const updateColumnSearch = (key, ev) => {
     const columnFilter = {
       ...columnSearch,
       [key]: ev.target.value || "",
-    }
+    };
     setColumnSearch(columnFilter);
     setCurrentPage(1);
-    const filterData = getFilteredListData({columnFilter});
-    setUsers(filterData);
   };
 
   const handleResetFilter = () => {
     setCurrentPage(1);
     setPerPage(10);
     setColumnSearch({});
-    setGlobalSearch('');
+    setGlobalSearch("");
   };
 
-  const handleSort = (key) => {
-    const updateSortBy = sortColumn === key ? sortBy === "ASC" ? "DESC" : "ASC" : "ASC";
-    
-    setsortBy(updateSortBy);
-    setsortColumn(key);
-    const filterData = getFilteredListData({sortBy : updateSortBy,sortColumn:key});
-    setUsers(filterData);
+  const handleSort = (columnName) => {
+    // If the current sortColumn is the same as columnName, toggle the sortBy direction
+    if (sortColumn === columnName) {
+      setsortBy(sortBy === "ASC" ? "DESC" : "ASC");
+    } else {
+      // If a new column is being sorted, default to ascending order
+      setsortColumn(columnName);
+      setsortBy("ASC");
+    }
   };
 
-  const handleGlobalSearch = (value) =>{
+  const handleGlobalSearch = (value) => {
     const updatedSearch = value;
     setGlobalSearch(updatedSearch);
     setCurrentPage(1);
-    const filterData = getFilteredListData({globalSearch: updatedSearch});
-    setUsers(filterData);
-}
+  };
 
-const getFilterDetails = () => {
-  const usersData = getAllUsers();
-  const {
-    email = "",
-    firstName = "",
-    id = "",
-    lastName = "",
-    status = "",
-  } = columnSearch || {};
+  const getFilterDetails = () => {
+    const usersData = getAllUsers();
+    const {
+      email = "",
+      firstName = "",
+      id = "",
+      lastName = "",
+      status = "",
+    } = columnSearch || {};
 
-  return firstName || lastName || email || id || status || globalSearch
-    ? `(filtered from ${usersData.length} total entries)`
-    : "";
-};
+    return firstName || lastName || email || id || status || globalSearch
+      ? `(filtered from ${usersData.length} total entries)`
+      : "";
+  };
 
   const showSort = (key) => {
     if (key === sortColumn) {
@@ -193,7 +245,7 @@ const getFilterDetails = () => {
     />
   );
 
-  const showHeaders = () => (
+  const showHeaders = () =>
     Object.keys(headerTitles).map((key) => (
       <th key={key} onClick={() => handleSort(key)}>
         <div
@@ -203,11 +255,11 @@ const getFilterDetails = () => {
           {headerTitles[key]} {showSort(key)}
         </div>
       </th>
-    ))
-  ); 
+    ));
 
   return (
     <>
+      <UserBreadcrumb value="List" />
       <div className="d-flex justify-content-between align-items-center my-4">
         <h1 className="mb-0">Users</h1>
         <div className="d-flex">
@@ -221,7 +273,7 @@ const getFilterDetails = () => {
             <i className="fa fa-xs me-2" />
             Add Random Users
           </Button>
-          <Button className="d-block me-2"  onClick={handleResetFilter}>
+          <Button className="d-block me-2" onClick={handleResetFilter}>
             <i className="fa fa-filter fa-xs me-2" />
             Reset Filter
           </Button>
@@ -280,7 +332,7 @@ const getFilterDetails = () => {
               type="search"
               style={{ marginLeft: 10 }}
               onChange={(ev) => {
-                handleGlobalSearch(ev.target.value)
+                handleGlobalSearch(ev.target.value);
               }}
               value={globalSearch}
             />
@@ -288,16 +340,14 @@ const getFilterDetails = () => {
         </Row>
         <Table bordered hover responsive className="users-table">
           <thead>
-            <tr>
-            {showHeaders()}
-            </tr>
+            <tr>{showHeaders()}</tr>
             <tr>
               {showFilterControls(headerTitles)}
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {userListData.map((user) => (
+            {listData.map((user) => (
               <tr key={user.id}>
                 <th scope="row">
                   <Link to={`/users/detail/${user.id}`}>{user.id}</Link>
@@ -336,17 +386,19 @@ const getFilterDetails = () => {
           </tbody>
         </Table>
         <div className="d-flex justify-content-between align-items-center">
-          <span>{getPaginationDetails()} {getFilterDetails()}</span>
+          <span>
+            {getPaginationDetails()} {getFilterDetails()}
+          </span>
           <PaginationContainer
             activePage={currentPage}
-            itemsCountPerPage={Number(showAll ? users.length : perPage)}
+            itemsCountPerPage={Number(showAll ? totalFilteredEntries : perPage)}
             onChange={(val) => setCurrentPage(val)}
-            totalItemsCount={users.length}
+            totalItemsCount={totalFilteredEntries}
           />
         </div>
       </Card>
     </>
   );
-}
+};
 
 export default List;

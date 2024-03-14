@@ -18,11 +18,13 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (values) => {
+  const onSubmit = async(values) => {
     const { email, password } = values;
-    if (email === emailMaster && password === passwordMaster) {
-      login();
-      navigate("/dashboard");
+    const loginSuccessful = await login(email, password);
+    if (loginSuccessful) {
+      navigate('/dashboard');
+    } else {
+      // Handle login failure (e.g., show an error message)
     }
   };
   return (

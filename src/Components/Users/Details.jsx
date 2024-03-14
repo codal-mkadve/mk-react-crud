@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Table } from "react-bootstrap";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link,Navigate, useParams, useNavigate } from "react-router-dom";
 import { getUserById, deleteUserById } from "../../Services/user-service";
+import UserBreadcrumb from "../Users/UserBreadcrumb";
+import { isValidObject } from "../../Services/utils-service"
 
 function Details() {
+
+
   const [user, setUser] = useState(null);
   const { id } = useParams();
   let navigate = useNavigate();
+ 
 
   useEffect(() => {
     const fetchUser = async () => {
       const userData = await getUserById(id);
+      if (!isValidObject(userData)) {
+        return <Navigate to="/users" replace />
+      }
       setUser(userData);
     };
     fetchUser();
@@ -38,6 +46,7 @@ function Details() {
 
   return (
     <>
+      <UserBreadcrumb active="List" />
       <div className="d-flex justify-content-between align-items-center my-4">
         <h1 className="mb-0">User Details</h1>
         <div className="d-flex">
