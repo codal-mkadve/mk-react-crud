@@ -9,7 +9,6 @@ import {
   Table,
 } from "react-bootstrap";
 import {
-  bulkCreateUsers,
   generateRandomUsers,
   getAllUsers,
   deleteAllUsers,
@@ -22,7 +21,7 @@ import PaginationContainer from "../Shared/PaginationContainer";
 import { statuses } from "./UserForm";
 import UserBreadcrumb from "../Users/UserBreadcrumb";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, deleteUser } from '../../actions/userActions';
+import { fetchUsers, deleteUser, bulkCreateUsers } from '../../actions/userActions';
 
 
 const debounce = (func, delay) => {
@@ -134,11 +133,24 @@ const List = () => {
     setCount((prevCount) => prevCount + 1);
   };
 
-  const handleAddRandomUser = async () => {
-    const randomUsers = generateRandomUsers(100);
-    await bulkCreateUsers(randomUsers);
-    fetchData(); // Re-fetch the updated list of users
-    setCount((prevCount) => prevCount + 1); // Trigger list update
+  // const handleAddRandomUser = async () => {
+  //   const randomUsers = generateRandomUsers(100);
+  //   await bulkCreateUsers(randomUsers);
+  //   fetchData(); // Re-fetch the updated list of users
+  //   setCount((prevCount) => prevCount + 1); // Trigger list update
+  // };
+
+  const handleAddRandomUser = () => {
+    const randomUsers = generateRandomUsers(100); // this function generates an array of user objects
+    console.log('randomUsers',randomUsers);
+    dispatch(bulkCreateUsers(randomUsers)).then(() => {
+      // After bulk creation is successful, fetch the updated users list
+      dispatch(fetchUsers());
+    })
+    .catch((error) => {
+      console.error("Failed to create users in bulk:", error);
+      // Handle any errors, e.g., showing an error message to the user
+    });
   };
 
   const handleDeleteAllUsers = async () => {

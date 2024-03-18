@@ -1,10 +1,28 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, Col, Row } from "react-bootstrap";
 import Container from "react-bootstrap/Container";
-import {getAllUsers} from "../../Services/user-service";
+import { getTotalCounts } from "../../Services/user-service";
 
 const Dashboard = () => {
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  useEffect(() => {
+    // Fetch total user count when the component mounts
+    fetchTotalCounts();
+  }, []);
+
+  const fetchTotalCounts = async () => {
+    try {
+      // Call the getTotalCounts API
+      const totalCount = await getTotalCounts();
+      // Update the state with the fetched count
+      setTotalUsers(totalCount);
+    } catch (error) {
+      console.error("Error fetching total counts:", error);
+    }
+  };
+
   return (
     <Container className="container-wrapper">
       <div className="d-flex justify-content-between align-items-center my-4">
@@ -17,7 +35,7 @@ const Dashboard = () => {
               <div className="card-body px-4">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div className="me-2">
-                    <div className="display-5">{getAllUsers().length}</div>
+                    <div className="display-5">{totalUsers}</div>
                   </div>
                   <Link
                     className="text-dark d-flex align-items-center text-decoration-none"

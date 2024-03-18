@@ -1,5 +1,6 @@
 import { faker } from "@faker-js/faker";
 import * as Yup from "yup";
+import http from "./http-service";
 
 const errorMessages = {
   required: "Required",
@@ -214,4 +215,20 @@ export const deleteAllUsers = () => {
 export const paginateTable = (array, perPage, pageIndex) => {
   const startIndex = (pageIndex - 1) * perPage;
   return array.slice(startIndex, pageIndex * perPage);
+};
+
+
+const TOTAL_COUNTS_API_URL = '/users/totalCounts';
+
+export const getTotalCounts = async () => {
+  try {
+    const response = await http.get(TOTAL_COUNTS_API_URL);
+
+    const totalCounts = response.data.count;
+
+    return totalCounts;
+  } catch (error) {
+    console.error('Error fetching total counts:', error);
+    throw error; 
+  }
 };
