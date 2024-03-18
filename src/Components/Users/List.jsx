@@ -21,6 +21,9 @@ import { Link, useNavigate } from "react-router-dom";
 import PaginationContainer from "../Shared/PaginationContainer";
 import { statuses } from "./UserForm";
 import UserBreadcrumb from "../Users/UserBreadcrumb";
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUsers, deleteUser } from '../../actions/userActions';
+
 
 const debounce = (func, delay) => {
   let debounceTimer;
@@ -45,32 +48,49 @@ const List = () => {
   const [count, setCount] = useState(0);
   const [totalFilteredEntries, setTotalFilteredEntries] = useState(0);
 
-  const all = getAllUsers();
+  // const all = getAllUsers();
+  const dispatch = useDispatch();
+  const { usersList, loading, error } = useSelector((state) => state.usersList);
+  // console.log('usersList', usersList);
+
+ 
+  useEffect(() => {
+    // setTimeout(() => {
+      dispatch(fetchUsers());
+    // }, 1000);
+  }, [dispatch]);
+  
 
   useEffect(() => {
-    const filterAndUpdateList = () => {
-      const filteredData = getFilteredListData({
-        columnSearch,
-        data: all,
-        globalSearch,
-        sortColumn,
-        sortBy,
-      });
-      console.log("filteredData", filteredData,sortColumn);
-      setTotalFilteredEntries(filteredData.length);
-
-      const paginatedData = paginateTable(
-        filteredData,
-        perPage === "all" ? filteredData.length : perPage,
-        currentPage
-      );
-
-      setListData(paginatedData);
-    };
-
-    // Debounce the filtering function to delay execution
-    const debouncedFiltering = debounce(filterAndUpdateList, 300);
-    debouncedFiltering();
+    
+    if (!loading && usersList && usersList.length > 0) {
+      const filterAndUpdateList = () => {
+        const filteredData = getFilteredListData({
+          columnSearch,
+          data: usersList,
+          globalSearch,
+          sortColumn,
+          sortBy,
+        });
+        setTotalFilteredEntries(filteredData.length);
+  
+        const paginatedData = paginateTable(
+          filteredData,
+          perPage === "all" ? filteredData.length : perPage,
+          currentPage
+        );
+  
+        setListData(paginatedData);
+      };
+  
+      // Debounce the filtering function to delay execution
+      const debouncedFiltering = debounce(filterAndUpdateList, 300);
+      debouncedFiltering();
+    } else {
+      // Handle the case when data is still loading or usersList is empty
+      setListData([]);
+      setTotalFilteredEntries(0);
+    }
   }, [
     columnSearch,
     currentPage,
@@ -79,6 +99,8 @@ const List = () => {
     sortColumn,
     sortBy,
     count,
+    loading,
+    usersList, // Include usersList and loading in the dependency array
   ]);
 
   const showEntries = {
@@ -106,8 +128,9 @@ const List = () => {
 
 
   const handleDeleteUser = async (id) => {
-    await deleteUserById(id);
-    fetchData();
+    // await deleteUserById(id);
+    // fetchData();
+    dispatch(deleteUser(id));
     setCount((prevCount) => prevCount + 1);
   };
 

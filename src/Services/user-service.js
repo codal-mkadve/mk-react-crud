@@ -74,9 +74,7 @@ export const updateUser = (id, data) => {
   return false;
 };
 
-export const globalSearch = (globalSearch) =>{
-  
-}
+
 
 export const getFilteredListData = ({
   columnSearch,
@@ -95,7 +93,6 @@ export const getFilteredListData = ({
     status = "",
   } = columnSearch || {};
 
-  console.log('sortColumn',sortColumn,sortBy);
   return data
   .sort((a, b) => {
     let aValue = a[sortColumn];

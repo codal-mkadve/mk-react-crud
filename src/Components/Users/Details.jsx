@@ -4,6 +4,8 @@ import { Link,Navigate, useParams, useNavigate } from "react-router-dom";
 import { getUserById, deleteUserById } from "../../Services/user-service";
 import UserBreadcrumb from "../Users/UserBreadcrumb";
 import { isValidObject } from "../../Services/utils-service"
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchUserById } from '../../actions/userActions';
 
 function Details() {
 
@@ -11,37 +13,45 @@ function Details() {
   const [user, setUser] = useState(null);
   const { id } = useParams();
   let navigate = useNavigate();
- 
+  const dispatch = useDispatch();
+  const { userDetail, loading, error } = useSelector((state) => state.usersList);
+
+  // useEffect(() => {
+  //   const fetchUser = async () => {
+  //     const userData = await getUserById(id);
+  //     console.log('userData',userData);
+  //     if (!isValidObject(userData)) {
+  //       return <Navigate to="/users" replace />
+  //     }
+  //     setUser(userData);
+  //   };
+  //   fetchUser();
+  // }, [id]);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await getUserById(id);
-      if (!isValidObject(userData)) {
-        return <Navigate to="/users" replace />
-      }
-      setUser(userData);
-    };
-    fetchUser();
-  }, [id]);
+    dispatch(fetchUserById(id));
+  }, [dispatch, id]);
 
   const handleDeleteClick = (id) => {
     deleteUserById(id);
     navigate("/users");
   };
 
-  if (!user) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+  if (!userDetail) return <Navigate to="/users" replace />;
 
   const userData = [
-    { label: "First Name", value: user.firstName },
-    { label: "Last Name", value: user.lastName },
-    { label: "Email", value: user.email },
-    { label: "Gender", value: user.gender },
-    { label: "Age", value: user.age.toString() },
-    { label: "Address", value: user.address },
-    { label: "Note", value: user.note },
-    { label: "Created At", value: new Date(user.createdAt).toLocaleString() },
-    { label: "Updated At", value: new Date(user.updatedAt).toLocaleString() },
-    { label: "Status", value: user.status },
+    { label: "First Name", value: userDetail.firstName },
+    { label: "Last Name", value: userDetail.lastName },
+    { label: "Email", value: userDetail.email },
+    { label: "Gender", value: userDetail.gender },
+    { label: "Age", value: userDetail.age.toString() },
+    { label: "Address", value: userDetail.address },
+    { label: "Note", value: userDetail.note },
+    { label: "Created At", value: new Date(userDetail.createdAt).toLocaleString() },
+    { label: "Updated At", value: new Date(userDetail.updatedAt).toLocaleString() },
+    { label: "Status", value: userDetail.status },
   ];
 
   return (

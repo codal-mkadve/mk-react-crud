@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, ButtonGroup, Card, Col, Form, Row } from "react-bootstrap";
-import { getUserById, userFormValidation, updateUser, createUser, generateRandomUser } from "../../Services/user-service";
+import { getUserById, userFormValidation, generateRandomUser } from "../../Services/user-service";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+
+import { useDispatch, useSelector } from "react-redux";
+import { createUser, updateUser, fetchUserById } from "../../actions/userActions";
+
 
 const defaultUser = {
   address: "",
@@ -28,9 +32,11 @@ export const statuses = {
 };
 
 const UserForm = ({ id }) => {
-  const [isLoading, setLoading] = useState(false);
+  // const [isLoading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const isEdit = !!id;
+  const { userDetails, isLoading } = useSelector((state) => state.userDetails || {});
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     defaultValues: defaultUser,
     resolver: yupResolver(userFormValidation()),
@@ -38,28 +44,68 @@ const UserForm = ({ id }) => {
 
   const formValues = watch();
 
+
+  // useEffect(() => {
+  //   if (isEdit) {
+  //     dispatch(fetchUserById(id));
+  //   }
+  // }, [dispatch, id, isEdit]);
+  
+  // useEffect(() => {
+  //   console.log('userDetails', userDetails);
+  //   if (isEdit && userDetails) {
+  //     Object.keys(userDetails).forEach((key) => {
+  //       setValue(key, userDetails[key]);
+  //     });
+  //   }
+  // }, [userDetails, isEdit, setValue]);
+  
   useEffect(() => {
     if (isEdit) {
-      const user = getUserById(id);
-      setUserValues(user);
+      dispatch(fetchUserById(id))
+        .then((response) => {
+          if (response && response.data) {
+            setValue("address", response.data.address);
+            setValue("age", response.data.age);
+            setValue("email", response.data.email);
+            setValue("firstName", response.data.firstName);
+            setValue("gender", response.data.gender);
+            setValue("lastName", response.data.lastName);
+            setValue("note", response.data.note);
+            setValue("status", response.data.status);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user details:", error);
+        });
     }
-  }, [isEdit, id, setValue]);
+  }, [dispatch, id, isEdit, setValue]);
 
-  const setUserValues = (user) =>{
-    Object.keys(user).forEach(key => {
+  const handleFormSubmit = (data) => {
+    if (isEdit) {
+      dispatch(updateUser(id, data)).then(() => navigate("/users"));
+    } else {
+      dispatch(createUser(data)).then(() => navigate("/users"));
+    }
+  };
+
+  const setUserValues = useCallback((user) => {
+    Object.keys(user).forEach((key) => {
       setValue(key, user[key]);
     });
-  } 
+  }, [setValue]);
+  
 
-  const handleFormSubmit = (values) => {
-    setLoading(true);
-    if (isEdit) {
-      updateUser(id, values);
-    } else {
-      createUser(values);
-    }
-      navigate("/users");
-  };
+  // const handleFormSubmit = (values) => {
+  //   // setLoading(true);
+  //   if (isEdit) {
+  //     dispatch(updateUser(id, values));
+  //   } else {
+  //     dispatch(createUser(values)).then((res)=>{
+  //       navigate("/users");
+  //     });
+  //   }
+  // };
 
   const handleRandomData = () => {
     setUserValues(generateRandomUser());
