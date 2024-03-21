@@ -11,7 +11,6 @@ import {
 import {
   generateRandomUsers,
   getAllUsers,
-  deleteAllUsers,
   deleteUserById,
   paginateTable,
   getFilteredListData,
@@ -21,7 +20,7 @@ import PaginationContainer from "../Shared/PaginationContainer";
 import { statuses } from "./UserForm";
 import UserBreadcrumb from "../Users/UserBreadcrumb";
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchUsers, deleteUser, bulkCreateUsers } from '../../actions/userActions';
+import { fetchUsers, deleteUser, bulkCreateUsers, deleteAllUsers } from '../../actions/userActions';
 
 
 const debounce = (func, delay) => {
@@ -153,10 +152,16 @@ const List = () => {
     });
   };
 
-  const handleDeleteAllUsers = async () => {
-    await deleteAllUsers();
-    fetchData(); // Re-fetch the updated list of users, which should now be empty
-    setCount((prevCount) => prevCount + 1); // Trigger list update
+  // const handleDeleteAllUsers = async () => {
+  //   await deleteAllUsers();
+  //   fetchData(); // Re-fetch the updated list of users, which should now be empty
+  //   setCount((prevCount) => prevCount + 1); // Trigger list update
+  // };
+
+  const handleDeleteAllUsers = () => {
+    if (window.confirm('Are you sure you want to delete all users?')) {
+      dispatch(deleteAllUsers());
+    }
   };
 
   const getPaginationDetails = () => {

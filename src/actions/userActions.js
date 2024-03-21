@@ -18,6 +18,9 @@ import {
   BULK_CREATE_USERS_REQUEST,
   BULK_CREATE_USERS_SUCCESS,
   BULK_CREATE_USERS_FAILURE,
+  DELETE_ALL_USERS_REQUEST,
+  DELETE_ALL_USERS_SUCCESS,
+  DELETE_ALL_USERS_FAILURE
 } from "../constants/actionTypes";
 
 
@@ -83,5 +86,16 @@ export const bulkCreateUsers = (users) => async (dispatch) => {
     dispatch(fetchUsers());
   } catch (error) {
     dispatch({ type: BULK_CREATE_USERS_FAILURE, payload: error.toString() });
+  }
+};
+
+export const deleteAllUsers = () => async (dispatch) => {
+  dispatch({ type: DELETE_ALL_USERS_REQUEST });
+  try {
+    const response = await http.delete('/users/delete-all'); 
+    dispatch({ type: DELETE_ALL_USERS_SUCCESS, payload: response.data });
+    dispatch(fetchUsers());
+  } catch (error) {
+    dispatch({ type: DELETE_ALL_USERS_FAILURE, payload: error.toString() });
   }
 };
